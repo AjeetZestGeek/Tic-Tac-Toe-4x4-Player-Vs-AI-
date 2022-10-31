@@ -121,6 +121,9 @@
 		highlightMesh.position.set(0.5,0,0.5);
 		scene.add(highlightMesh);
 
+		const grid1 = new THREE.GridHelper(boardSize,boardSize);
+		scene.add(grid1);
+
 		const mousePosition = new THREE.Vector2();
 		const raycaster = new THREE.Raycaster();
 		let intersects;
@@ -182,6 +185,7 @@
 			for(var i = 0; i < boardSize; i++){
 				for(var j = 0; j < boardSize; j++){
 					if(board[i][j]==p1){
+						// debugger;
 						score = isWinMain(i,j,-100);
 						if(score==-100){
 							return score;
