@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="icon" type="image/x-icon" href="img/4*4TicTacToe.png">
+	<title>Tic Tac Toe</title>
+	<style type="text/css">
+		*{
+			margin: 0;
+			padding: 0;
+		}
+		.text{
+			color: white;
+			position: fixed;
+			font-size: 20px;
+			font-family: Arial, Helvetica, sans-serif;
+			font-weight: bold;
+			left: 50%;
+			top: 10px;
+			text-shadow: 0 2px 5px rgba(0, 0, 0, .3);
+			transform: translate(-50%);
+		}
+		.restart{
+			position: fixed;
+			display: none;
+			border: none;
+			padding: 0;
+			margin: 0;
+		}
+		.turn{
+			position: fixed;
+			float: right;
+			color: white;
+		}
+	</style>
+</head>
+<body>
+	<p class="text">Loging ...</p>
+	<p class="turn">Loging ... </p>
+	<img class="restart" onclick="restartFun()" src="./img/play.jpeg">
+	<script type="text/javascript" src="js/gsap.min.js"></script>
+	<script type="module">
+		import * as THREE from './js/three.module.js';
+		import { OrbitControls } from './js/OrbitControls.js';
+		import * as CANNON from './js/cannon-es.js';
+
+		const renderer = new THREE.WebGLRenderer({antialias: true});
+
+		renderer.shadowMap.enabled = true;
+
+		renderer.setSize(window.innerWidth, window.innerHeight);
+
+		document.body.appendChild(renderer.domElement);
+
+		const scene = new THREE.Scene();
+
+		const camera = new THREE.PerspectiveCamera(
+			5,
+			window.innerWidth/window.innerHeight,
+			0.1,
+			1000 
+			);
+		const orbit = new OrbitControls(camera,renderer.domElement);
+
+		const ambientLight = new THREE.AmbientLight(0x555555);
+		scene.add(ambientLight);
+
+		const directionalLight = new THREE.DirectionalLight(0xFFFFFF, 0.8);
+		scene.add(directionalLight);
+		directionalLight.position.set(0,50,0);
+		directionalLight.castShadow = true;
+		directionalLight.shadow.mapSize.width = 1024;
+		directionalLight.shadow.mapSize.height = 1024;
+
+		function delay(ms){
+			return new Promise(resolve => setTimeout(resolve, ms));
+		}
+
+		const boardSize = 4;
+		let board = [];
+		for (var i = 0; i < boardSize; i++) {
+			var demo = Array();
+			for (var j = 0; j < boardSize; j++) {
+				demo.push(null);
+			}
+			board.push(demo);
+		}
+		const p1 = 1;
+		const ai = 2;
+		const text = document.querySelector(".text");
+		const restart = document.querySelector(".restart");
+		const playerTurn = document.querySelector(".turn");
+		playerTurn.innerText = 'Player Turn';
+		let turn = 1;
+		let gameStat = 'Start';
+		let checkWin = false;
+		let aino1stmove = 0;
+
+		camera.position.set(-10,30,30);
+		orbit.update();
+		const planeMesh = new THREE.Mesh(
+			new THREE.PlaneGeometry(boardSize,boardSize),
+			new THREE.MeshBasicMaterial({
+				// color: 0x00FF00DD,
+				side: THREE.DoubleSide,
+				visible: false
+			})
+		);
+		planeMesh.rotateX(-Math.PI / 2);
+		planeMesh.name = "ground";
+		scene.add(planeMesh);
+
+		const highlightMesh = new THREE.Mesh(
+			new THREE.PlaneGeometry(1,1),
+			new THREE.MeshBasicMaterial({
+				side: THREE.DoubleSide,
+				transparent: true
+			})
+		);
+		highlightMesh.rotateX(-Math.PI / 2);
+		highlightMesh.position.set(0.5,0,0.5);
+		scene.add(highlightMesh);
+
+		// const grid = new THREE.GridHelper(20,20);
+		// scene.add(grid);
+
+		const grid1 = new THREE.GridHelper(boardSize,boardSize);
+		scene.add(grid1);
+
+		const mousePosition = new THREE.Vector2();
+		const raycaster = new THREE.Raycaster();
+		let intersects;
+
+		window.addEventListener('mousemove', function(e){
+			mousePosition.x = (e.clientX / window.innerWidth) * 2 - 1;
+			mousePosition.y = -(e.clientY / window.innerHeight) * 2 + 1;
+			raycaster.setFromCamera(mousePosition, camera);
+			intersects = raycaster.intersectObjects(scene.children);
+			intersects.forEach(function(intersect){
+				if(intersect.object.name=="ground"){
+					const highlightPos = new THREE.Vector3().copy(intersect.point).floor().addScalar(0.5);
+					highlightMesh.position.set(highlightPos.x, 0, highlightPos.z);
+					const objectExit = objects.find(function(object){
+						return (object.position.x === highlightMesh.position.x)
+						&& (object.position.z === highlightMesh.position.z);
+					});
+					if(!objectExit){
+						highlightMesh.material.color.setHex(0xFFFFFF);
+					}else{
+						highlightMesh.material.color.setHex(0xFF0000);
+					}
+				}
+			});
+		});
+
+		const sphereP1 = new THREE.Mesh(
+			new THREE.SphereGeometry(0.4, 4, 50),
+			new THREE.MeshStandardMaterial({
+				// wireframe: true,
+				color: 0xFFEA00,
+				metalness: 0,
+				roughness: 0
+			})
+		);
+		const cubeai = new THREE.Mesh(
+			new THREE.BoxGeometry(0.4,0.4,0.4),
+			new THREE.MeshStandardMaterial({
+				// wireframe: true,
+				color: 0xFFAAA0,
+				metalness: 0,
+				roughness: 0
+			})
+		);
+		function isWinMain(i,j,point){
+			if(i+3<boardSize&&board[i][j]==board[i+1][j]&&board[i][j]==board[i+2][j]&&board[i][j]==board[i+3][j]){
+				return point;
+			}else if(j+3<boardSize&&board[i][j]==board[i][j+1]&&board[i][j]==board[i][j+2]&&board[i][j]==board[i][j+3]){
+				return point;
+			}else if(i+3<boardSize&&j+3<boardSize&&board[i][j]==board[i+1][j+1]&&board[i][j]==board[i+2][j+2]&&board[i][j]==board[i+3][j+3]){
+				return point;
+			}else if(i+3<boardSize&&j-3>=0&&board[i][j]==board[i+1][j-1]&&board[i][j]==board[i+2][j-2]&&board[i][j]==board[i+3][j-3]){
+				return point;
+			}
+			return 0;
+		}
+		function isWin() {
+			var score = 0;
+			for(var i = 0; i < boardSize; i++){
+				for(var j = 0; j < boardSize; j++){
+					if(board[i][j]==p1){
+						// debugger;
+						score = isWinMain(i,j,-100);
+						if(score==-100){
+							return score;
+						}
+					}else if(board[i][j]==ai){
+						score = isWinMain(i,j,100);
+						if(score==100){
+							return score;
+						}
+					}
+				}
+			}
+			return score;
+		}
+		function isMovesLeft(){
+			for(var i = 0; i < boardSize; i++){
+		        for(var j = 0; j < boardSize; j++){
+		            if (board[i][j] == null){
+		                return true;
+		            }
+		        }
+			}           
+		    return false;
+		}
+		const objects = [];
+		window.addEventListener("click", function(){
+			playerTurn.innerText = 'AI Turn';
+			const objectExit = objects.find(function(object){
+				return (object.position.x === highlightMesh.position.x)
+				&& (object.position.z === highlightMesh.position.z);
+			});
+			if(!objectExit){
+				intersects.forEach(async function(intersect){
+					if(intersect.object.name=="ground"){
+						//	Player Turn
+						let objCopy = sphereP1.clone();
+						board[highlightMesh.position.z+((boardSize/2)-0.5)][highlightMesh.position.x+((boardSize/2)-0.5)] = p1;
+						objCopy.position.copy(highlightMesh.position);
+						scene.add(objCopy);
+						objects.push(objCopy);
+						highlightMesh.material.color.setHex(0xFF0000);
+						await delay(500);
+						var checkWin = isWin();
+						if(checkWin==-100){
+							gameStat = "Player Wins";
+						}else{
+							// AI Turn
+							objCopy = cubeai.clone();
+							var pos = {x:-1,z:-1};;
+							if(aino1stmove>1){
+								pos = findBestMove();
+								board[pos.z][pos.x] = ai;
+								var tryWin = isWin();
+								if (tryWin!=100) {
+									board[pos.z][pos.x] = null;
+									for(var a = 0; a < boardSize*boardSize; a++)
+							        {
+							        	var i = Math.floor(a/boardSize);
+							        	var j = a%boardSize;
+							        	if(board[i][j] == null){
+							        		board[i][j] = p1;
+							        		tryWin = isWin();
+							        		if(tryWin==-100){
+							        			board[i][j] = ai;
+							        			pos.z = i;
+							        			pos.x = j;
+							        			break;
+							        		}else{
+							        			board[i][j] = null;
+							        		}
+							        	}
+							        }
+							        board[pos.z][pos.x] = ai;
+								}
+							}else{
+								aino1stmove += 1;
+								var a = Math.round((Math.random()*100))%(boardSize*boardSize);
+								var i = Math.floor(a/boardSize);
+							    var j = a%boardSize;
+							    while(board[i][j]!=null){
+							    	var a = Math.round((Math.random()*100))%(boardSize*boardSize);
+									var i = Math.floor(a/boardSize);
+								    var j = a%boardSize;
+							    }
+							    board[i][j] = ai;
+							    pos.z = i;
+			        			pos.x = j;
+							}
+							console.log(board);
+							highlightMesh.position.x = parseInt(pos.x)-((boardSize/2)-0.5);
+							highlightMesh.position.z = parseInt(pos.z)-((boardSize/2)-0.5);
+
+							objCopy.position.copy(highlightMesh.position);
+							scene.add(objCopy);
+							objects.push(objCopy);
+							await delay(500);
+							checkWin = isWin();
+							if(checkWin==100){
+								gameStat = "AI Wins";
+							}else if(!isMovesLeft()){
+								gameStat = "Tie (Game Over)";
+							}
+							playerTurn.innerText = 'Player Turn';
+						}
+					}
+				});
+			}
+		});
+		function minimax(depth,alpha,beta,isMax){
+			let score = isWin();
+		    // If Maximizer has won the game
+		    // return his/her evaluated score
+		    if (score == 100 || score == -100){
+		        return score;
+		    }
+		  
+		    // If there are no more moves and
+		    // no winner then it is a tie
+		    if (isMovesLeft() == false){
+		        return 0;
+		    }
+
+		    if(depth==16){
+		    	return 0;
+		    }
+		  
+		    // If this maximizer's move
+		    if (isMax)
+		    {
+		        let best = -1000;
+		  
+		        // Traverse all cells
+		        for(var a = 0; a < boardSize*boardSize; a++)
+		        {
+		        	var i = Math.floor(a/boardSize);
+		        	var j = a%boardSize;
+		                 
+		                // Check if cell is empty
+		                if (board[i][j]==null)
+		                {
+		                    // Make the move
+		                    board[i][j] = ai;
+		  
+		                    // Call minimax recursively
+		                    // and choose the maximum value
+		                    var value = minimax(depth + 1, alpha, beta, !isMax);
+		                    best = Math.max(best, value);
+		                    alpha = Math.max(alpha,value);
+		                    if(beta<=alpha){
+		                    	board[i][j] = null;
+		                    	break;
+		                    }
+		  
+		                    // Undo the move
+		                    board[i][j] = null;
+		                }
+		            }
+		        return best;
+		    }
+		  
+		    // If this minimizer's move
+		    else
+		    {
+		        let best = 1000;
+		  
+		        // Traverse all cells
+		        for(var a = 0; a < boardSize*boardSize; a++)
+		        {
+		        	var i = Math.floor(a/boardSize);
+		        	var j = a%boardSize;
+		                // Check if cell is empty
+		                if (board[i][j] == null)
+		                {
+		                    // Make the move
+		                    board[i][j] = p1;
+		  
+		                    // Call minimax recursively and
+		                    // choose the minimum value
+		                    var value = minimax(depth + 1, alpha, beta, !isMax);
+		                    best = Math.min(best, value);
+		                    beta = Math.min(beta,value);
+		                    if(beta<=alpha){
+		                    	board[i][j] = null;
+		                    	break;
+		                    }
+		  
+		                    // Undo the move
+		                    board[i][j] = null;
+		                }
+		        }
+		        return best;
+		    }
+		}
+		function findBestMove()
+		{
+		    let bestVal = -1000;
+		    let bestMove = {x:-1,z:-1};
+		  
+		    // Traverse all cells, evaluate
+		    // minimax function for all empty
+		    // cells. And return the cell
+		    // with optimal value.
+		    for(var a = 0; a < boardSize*boardSize; a++)
+		    {
+		        var i = Math.floor(a/boardSize);
+		        var j = a%boardSize;
+		             
+		            // Check if cell is empty
+		            if (board[i][j] == null)
+		            {
+		                 
+		                // Make the move
+		                board[i][j] = ai;
+		  
+		                // compute evaluation function
+		                // for this move.
+		                let moveVal = minimax(0, -1000, 1000, false);
+		                // Undo the move
+		                board[i][j] = null;
+		  
+		                // If the value of the current move
+		                // is more than the best value, then
+		                // update best
+		                if (moveVal > bestVal)
+		                {
+		                    bestMove.x = j;
+		                    bestMove.z = i;
+		                    bestVal = moveVal;
+		                }
+		            }
+	
+		    }
+		    return bestMove;
+		}
+		function animateFrame(time){
+			text.innerText = gameStat;
+			if(gameStat!='Start'){
+				restart.style.display = 'block';
+				return;
+			}
+			highlightMesh.material.opacity = 1 + Math.sin(time / 120);
+			objects.forEach(function(object){
+				object.rotation.y = time /  1000;
+				object.rotation.z = time /  1000;
+				object.position.y = 0.1 + 0.1 * Math.abs(Math.sin(time / 1000));
+			});
+
+			renderer.render(scene, camera);
+		}
+		renderer.setAnimationLoop(animateFrame);
+
+		window.addEventListener('resize', function() {
+			camera.aspect = window.innerWidth / window.innerHeight;
+			camera.updateProjectionMatrix();
+			renderer.setSize(window.innerWidth, window.innerHeight);
+		});
+		function restartFun(){
+			location.reload();
+		}
+		window.restartFun=restartFun;
+	</script>
+</body>
+</html>
