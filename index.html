@@ -7,19 +7,51 @@
 		<link rel="stylesheet" href="./css/style.css">
 	<title>Tic Tac Toe</title>
 	<style type="text/css">
+.levels{
+	  display: flex;
+
+    width: 100%;
+    padding: 25px;
+    justify-content: space-around;
+}
+.levels-change{
+	    width: 100%;
+    height: auto;
+    min-height: 35px;
+}
+@media only screen and(max-width: 767px){
+	.levels {
+    width: 100%;
+    padding: 25px;
+    justify-content: space-around;
+    display: block;
+    padding: 20px 7px;
+}
+
+}
 
 	</style>
+
 </head>
 <body>
 	<div  class="pad-20">
 	<p class="text">Loging ...</p>
+	<div class="levels">
 	<p class="turn">Loging ... </p>
-	
+	<p class="turn"><select id="TicTacToe4level"  class="levels-change" onchange="restartFun()">
+		<option value="0">Level 0</option>
+		<option value="1">Level 1</option>
+		<option value="2">Level 2</option>
+		<option value="3">Level 3</option>
+		<option value="4">Level 4</option>
+		<option value="5">Level 5</option>
+		<option value="6">Impossible(May be you can win)</option>
+	</select></p>
+</div>
 </div>
 	<div class="image">
 	<img class="restart" onclick="restartFun()" src="./img/play.svg">
 </div>
-
 	<script type="text/javascript" src="js/gsap.min.js"></script>
 	<script type="module">
 		import * as THREE from './js/three.module.js';
@@ -71,6 +103,9 @@
 		const text = document.querySelector(".text");
 		const restart = document.querySelector(".restart");
 		const playerTurn = document.querySelector(".turn");
+		var level = isNaN(parseInt(localStorage.getItem("level")))?0:parseInt(localStorage.getItem("level"));
+		console.log(level);
+		var levelDropDown = document.querySelector("#TicTacToe4level").value = level;
 		playerTurn.innerText = 'Player Turn';
 		let turn = 1;
 		let gameStat = 'Start';
@@ -233,7 +268,7 @@
 						scene.add(objCopy);
 						objects.push(objCopy);
 						highlightMesh.material.color.setHex(0xFF0000);
-						await delay(500);
+						await delay(100);
 						var checkWin = isWin();
 						if(checkWin==-100){
 							gameStat = "Player Wins";
@@ -286,7 +321,7 @@
 							objCopy.position.copy(highlightMesh.position);
 							scene.add(objCopy);
 							objects.push(objCopy);
-							await delay(500);
+							await delay(100);
 							checkWin = isWin();
 							if(checkWin==100){
 								gameStat = "AI Wins";
@@ -313,7 +348,7 @@
 		        return 0;
 		    }
 
-		    if(depth==6){
+		    if(depth==level){
 		    	return 0;
 		    }
 		  
@@ -448,6 +483,8 @@
 			renderer.setSize(window.innerWidth, window.innerHeight);
 		});
 		function restartFun(){
+			var level = document.querySelector("#TicTacToe4level");
+			localStorage.setItem("level", level.value);
 			location.reload();
 		}
 		window.restartFun=restartFun;
