@@ -4,41 +4,22 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="icon" type="image/x-icon" href="img/4*4TicTacToe.png">
+		<link rel="stylesheet" href="./css/style.css">
 	<title>Tic Tac Toe</title>
 	<style type="text/css">
-		*{
-			margin: 0;
-			padding: 0;
-		}
-		.text{
-			color: white;
-			position: fixed;
-			font-size: 20px;
-			font-family: Arial, Helvetica, sans-serif;
-			font-weight: bold;
-			left: 50%;
-			top: 10px;
-			text-shadow: 0 2px 5px rgba(0, 0, 0, .3);
-			transform: translate(-50%);
-		}
-		.restart{
-			position: fixed;
-			display: none;
-			border: none;
-			padding: 0;
-			margin: 0;
-		}
-		.turn{
-			position: fixed;
-			float: right;
-			color: white;
-		}
+
 	</style>
 </head>
 <body>
+	<div  class="pad-20">
 	<p class="text">Loging ...</p>
 	<p class="turn">Loging ... </p>
-	<img class="restart" onclick="restartFun()" src="./img/play.jpeg">
+	
+</div>
+	<div class="image">
+	<img class="restart" onclick="restartFun()" src="./img/play.svg">
+</div>
+
 	<script type="text/javascript" src="js/gsap.min.js"></script>
 	<script type="module">
 		import * as THREE from './js/three.module.js';
@@ -332,7 +313,7 @@
 		        return 0;
 		    }
 
-		    if(depth==16){
+		    if(depth==0){
 		    	return 0;
 		    }
 		  
