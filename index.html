@@ -214,7 +214,26 @@
 		window.addEventListener("click", function(){
 			playerOrAIMoves();
 		});
-		window.addEventListener("touchstart", function(){
+		window.addEventListener("touchstart", e => {
+			mousePosition.x = (e.changedTouches[0].clientX / window.innerWidth) * 2 - 1;
+			mousePosition.y = -(e.changedTouches[0].clientY / window.innerHeight) * 2 + 1;
+			raycaster.setFromCamera(mousePosition, camera);
+			intersects = raycaster.intersectObjects(scene.children);
+			intersects.forEach(function(intersect){
+				if(intersect.object.name=="ground"){
+					const highlightPos = new THREE.Vector3().copy(intersect.point).floor().addScalar(0.5);
+					highlightMesh.position.set(highlightPos.x, 0, highlightPos.z);
+					const objectExit = objects.find(function(object){
+						return (object.position.x === highlightMesh.position.x)
+						&& (object.position.z === highlightMesh.position.z);
+					});
+					if(!objectExit){
+						highlightMesh.material.color.setHex(0xFFFFFF);
+					}else{
+						highlightMesh.material.color.setHex(0xFF0000);
+					}
+				}
+			});
 			playerOrAIMoves();
 		});
 		function playerOrAIMoves(){
