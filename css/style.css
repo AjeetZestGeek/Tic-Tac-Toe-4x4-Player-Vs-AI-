@@ -1,67 +1,61 @@
 *{
-			margin: 0;
-			padding: 0;
-		}
-		body{
-			    background: #000;
-			    position: relative;
-		}
-		.text{
-			color: white;
-   
-    font-size: 20px;
-    font-family: Arial, Helvetica, sans-serif;
-    font-weight: bold;
-    left: 50%;
-    top: 10px;
-    text-shadow: 0 2px 5px rgb(0 0 0 / 30%);
+	margin: 0;
+	padding: 0;
+}
+body{
+	    background: #000;
+	    position: relative;
+}
+.text{
+	color: white;
+   font-size: 20px;
+   font-family: Arial, Helvetica, sans-serif;
+   font-weight: bold;
+   left: 50%;
+   top: 10px;
+   text-shadow: 0 2px 5px rgb(0 0 0 / 30%);
+   background: #000;
+   display: block;
+   text-align: center;
+}
+.restart{
+	position: fixed;
+	display: none;
+	border: none;
+	padding: 0;
+	margin: 0;
+}
+.pad-20{
+	overflow: hidden;
+   position: absolute;
+   top: 0;
+   width: 100%;
+   left: 0;
+   right: 0;
+   padding: 20px;
+    box-sizing: border-box;
+}
+.turn{
+    color: white;
     background: #000;
-    display: block;
-    text-align: center;
-		}
-		.restart{
-			position: fixed;
-			display: none;
-			border: none;
-			padding: 0;
-			margin: 0;
-		}
-		.pad-20{
-			     overflow: hidden;
-    position: absolute;
-    top: 0;
-    width: 100%;
-   
-    left: 0;
-    right: 0;
-    padding: 20px;
-
-		}
-		.turn{
-		    color: white;
-    background: #000;
-		}
-		.image img{
-
-		    position: absolute;
-		
- top: 50%;
-    left: 50%;
-    right: 50%;
- 
-    transform: translate(-50%, -50%);
-    width: 100%;
-    max-width: 4%;
+}
+.image img{
+   position: absolute;
+   top: 50%;
+   left: 50%;
+   right: 50%;
+   transform: translate(-50%, -50%);
+   width: 100%;
+   max-width: 4%;
 }
 .levels{
-	    display: flex;
-
-    width: 100%;
-    padding: 25px;
-    justify-content: space-around;
+	display: flex;
+   width: 100%;
+   padding: 25px;
+   justify-content: space-around;
 }
 .levels-change{
-	    width: 100%;
-    height: auto;
-    min-height: 35px;
+	width: 100%;
+   height: auto;
+   min-height: 35px;
 }
