@@ -27,9 +27,13 @@
 			margin: 0;
 		}
 		.pad-20{
-			     position: absolute;
+			     overflow: hidden;
+    position: absolute;
     top: 0;
     width: 100%;
+   
+    left: 0;
+    right: 0;
     padding: 20px;
 
 		}
@@ -48,4 +52,16 @@
     transform: translate(-50%, -50%);
     width: 100%;
     max-width: 4%;
+}
+.levels{
+	    display: flex;
+
+    width: 100%;
+    padding: 25px;
+    justify-content: space-around;
+}
+.levels-change{
+	    width: 100%;
+    height: auto;
+    min-height: 35px;
 }
