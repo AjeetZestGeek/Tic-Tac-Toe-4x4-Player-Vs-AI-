@@ -55,7 +55,7 @@
 		const scene = new THREE.Scene();
 
 		const camera = new THREE.PerspectiveCamera(
-			5,
+			15,
 			window.innerWidth/window.innerHeight,
 			0.1,
 			1000 
@@ -212,6 +212,12 @@
 		}
 		const objects = [];
 		window.addEventListener("click", function(){
+			playerOrAIMoves();
+		});
+		window.addEventListener("touchstart", function(){
+			playerOrAIMoves();
+		});
+		function playerOrAIMoves(){
 			playerTurn.innerText = 'AI Turn';
 			const objectExit = objects.find(function(object){
 				return (object.position.x === highlightMesh.position.x)
@@ -292,7 +298,7 @@
 					}
 				});
 			}
-		});
+		}
 		function minimax(depth,alpha,beta,isMax){
 			let score = isWin();
 		    // If Maximizer has won the game
