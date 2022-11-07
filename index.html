@@ -8,30 +8,28 @@
 	<title>Tic Tac Toe</title>
 	<style type="text/css">
 .levels{
-	  display: flex;
-
+	display: flex;
     width: 100%;
     padding: 25px;
     justify-content: space-around;
 }
 .levels-change{
-	    width: 100%;
+	width: 100%;
     height: auto;
     min-height: 35px;
 }
 @media (max-width: 767px){
 	.levels {
-     display: block;
-    padding: 0px;
-    padding-top: 20px;
-}
-.levels-change {
-    margin-top: 12px;
-}
-
-.image img {
-    max-width: 8%;
-}
+	    display: block;
+	    padding: 0px;
+	    padding-top: 20px;
+	}
+	.levels-change {
+	    margin-top: 12px;
+	}
+	.image img {
+	    max-width: 8%;
+	}
 }
 
 	</style>
@@ -42,15 +40,27 @@
 	<p class="text">Loging ...</p>
 	<div class="levels">
 	<p class="turn">Loging ... </p>
-	<p class="turn"><select id="TicTacToe4level"  class="levels-change" onchange="restartFun()">
-		<option value="0">Level 0</option>
-		<option value="1">Level 1</option>
-		<option value="2">Level 2</option>
-		<option value="3">Level 3</option>
-		<option value="4">Level 4</option>
-		<option value="5">Level 5</option>
-		<option value="6">Impossible(May be you can win)</option>
-	</select></p>
+	<p class="turn">
+		<select id="TicTacToe4level"  class="levels-change" onchange="restartFun()">
+			<option value="0">Level 0</option>
+			<option value="1">Level 1</option>
+			<option value="2">Level 2</option>
+			<option value="3">Level 3</option>
+			<option value="4">Level 4</option>
+			<option value="5">Level 5</option>
+			<option value="6">Level 6</option>
+		</select>
+	</p>
+	<p class="text">Board Size</p>
+	<p class="boad-size">
+		<select id="boad-size"  class="board-change" onchange="restartFun()">
+			<option value="3">3 x 3</option>
+			<option value="4">4 x 4</option>
+			<option value="5">5 x 5</option>
+			<option value="6">6 x 6</option>
+			<option value="7">7 x 7</option>
+		</select>
+	</p>
 </div>
 </div>
 	<div class="image">
@@ -92,8 +102,11 @@
 		function delay(ms){
 			return new Promise(resolve => setTimeout(resolve, ms));
 		}
-
-		const boardSize = 4;
+		let boardSize = isNaN(parseInt(localStorage.getItem("boardSize")))?4:parseInt(localStorage.getItem("boardSize"));
+		if(boardSize < 0){
+			boardSize*=-1;
+		}
+		var boardSizeSelect = document.querySelector("#boad-size").value = boardSize;
 		let board = [];
 		for (var i = 0; i < boardSize; i++) {
 			var demo = Array();
@@ -108,9 +121,11 @@
 		const restart = document.querySelector(".restart");
 		const playerTurn = document.querySelector(".turn");
 		var level = isNaN(parseInt(localStorage.getItem("level")))?0:parseInt(localStorage.getItem("level"));
-		console.log(level);
+		if(level < 0){
+			level*=-1;
+		}
 		var levelDropDown = document.querySelector("#TicTacToe4level").value = level;
-		playerTurn.innerText = 'Player Turn';
+		playerTurn.innerText = 'Your Turn';
 		let turn = 1;
 		let gameStat = 'Start';
 		let checkWin = false;
@@ -138,7 +153,11 @@
 			})
 		);
 		highlightMesh.rotateX(-Math.PI / 2);
-		highlightMesh.position.set(0.5,0,0.5);
+		if(boardSize%2==0){
+			highlightMesh.position.set(0.5,0,0.5);
+		}else{
+			highlightMesh.position.set(0,0,0);
+		}
 		scene.add(highlightMesh);
 
 		const grid1 = new THREE.GridHelper(boardSize,boardSize);
@@ -155,7 +174,11 @@
 			intersects = raycaster.intersectObjects(scene.children);
 			intersects.forEach(function(intersect){
 				if(intersect.object.name=="ground"){
-					const highlightPos = new THREE.Vector3().copy(intersect.point).floor().addScalar(0.5);
+					if(boardSize%2==0){
+						var highlightPos = new THREE.Vector3().copy(intersect.point).floor().addScalar(0.5);
+					}else{
+						var highlightPos = new THREE.Vector3().copy(intersect.point).addScalar(0.5).floor();
+					}
 					highlightMesh.position.set(highlightPos.x, 0, highlightPos.z);
 					const objectExit = objects.find(function(object){
 						return (object.position.x === highlightMesh.position.x)
@@ -188,7 +211,19 @@
 				roughness: 0
 			})
 		);
-		function isWinMain(i,j,point){
+		function isWinMain5(i,j,point){
+			if(i+4<boardSize&&board[i][j]==board[i+1][j]&&board[i][j]==board[i+2][j]&&board[i][j]==board[i+3][j]&&board[i][j]==board[i+4][j]){
+				return point;
+			}else if(j+4<boardSize&&board[i][j]==board[i][j+1]&&board[i][j]==board[i][j+2]&&board[i][j]==board[i][j+3]&&board[i][j]==board[i][j+4]){
+				return point;
+			}else if(i+4<boardSize&&j+4<boardSize&&board[i][j]==board[i+1][j+1]&&board[i][j]==board[i+2][j+2]&&board[i][j]==board[i+3][j+3]&&board[i][j]==board[i+4][j+4]){
+				return point;
+			}else if(i+4<boardSize&&j-4>=0&&board[i][j]==board[i+1][j-1]&&board[i][j]==board[i+2][j-2]&&board[i][j]==board[i+3][j-3]&&board[i][j]==board[i+4][j-4]){
+				return point;
+			}
+			return 0;
+		}
+		function isWinMain4(i,j,point){
 			if(i+3<boardSize&&board[i][j]==board[i+1][j]&&board[i][j]==board[i+2][j]&&board[i][j]==board[i+3][j]){
 				return point;
 			}else if(j+3<boardSize&&board[i][j]==board[i][j+1]&&board[i][j]==board[i][j+2]&&board[i][j]==board[i][j+3]){
@@ -200,33 +235,56 @@
 			}
 			return 0;
 		}
+		function isWinMain3(i,j,point){
+			if(i+2<boardSize&&board[i][j]==board[i+1][j]&&board[i][j]==board[i+2][j]){
+				return point;
+			}else if(j+2<boardSize&&board[i][j]==board[i][j+1]&&board[i][j]==board[i][j+2]){
+				return point;
+			}else if(i+2<boardSize&&j+2<boardSize&&board[i][j]==board[i+1][j+1]&&board[i][j]==board[i+2][j+2]){
+				return point;
+			}else if(i+2<boardSize&&j-2>=0&&board[i][j]==board[i+1][j-1]&&board[i][j]==board[i+2][j-2]){
+				return point;
+			}
+			return 0;
+		}
 		function isWin() {
 			var score = 0;
-			for(var i = 0; i < boardSize; i++){
-				for(var j = 0; j < boardSize; j++){
-					if(board[i][j]==p1){
-						// debugger;
-						score = isWinMain(i,j,-100);
-						if(score==-100){
-							return score;
-						}
-					}else if(board[i][j]==ai){
-						score = isWinMain(i,j,100);
-						if(score==100){
-							return score;
-						}
+			for(var a = 0; a < boardSize*boardSize; a++){
+				var i = Math.floor(a/boardSize);
+	        	var j = a%boardSize;
+				if(board[i][j]==p1){
+					if(boardSize==3){
+						score = isWinMain3(i,j,-100);
+					}else if(boardSize==4||boardSize==5){
+						score = isWinMain4(i,j,-100);
+					}else{
+						score = isWinMain5(i,j,-100);
+					}
+					if(score==-100){
+						return score;
+					}
+				}else if(board[i][j]==ai){
+					if(boardSize==3){
+						score = isWinMain3(i,j,100);
+					}else if(boardSize==4||boardSize==5){
+						score = isWinMain4(i,j,100);
+					}else{
+						score = isWinMain5(i,j,100);
+					}
+					if(score==100){
+						return score;
 					}
 				}
 			}
 			return score;
 		}
 		function isMovesLeft(){
-			for(var i = 0; i < boardSize; i++){
-		        for(var j = 0; j < boardSize; j++){
-		            if (board[i][j] == null){
-		                return true;
-		            }
-		        }
+			for(var a = 0; a < boardSize*boardSize; a++){
+		        var i = Math.floor(a/boardSize);
+	        	var j = a%boardSize;
+	            if (board[i][j] == null){
+	                return true;
+	            }
 			}           
 		    return false;
 		}
@@ -241,7 +299,11 @@
 			intersects = raycaster.intersectObjects(scene.children);
 			intersects.forEach(function(intersect){
 				if(intersect.object.name=="ground"){
-					const highlightPos = new THREE.Vector3().copy(intersect.point).floor().addScalar(0.5);
+					if(boardSize%2==0){
+						var highlightPos = new THREE.Vector3().copy(intersect.point).floor().addScalar(0.5);
+					}else{
+						var highlightPos = new THREE.Vector3().copy(intersect.point).addScalar(0.5).floor();
+					}
 					highlightMesh.position.set(highlightPos.x, 0, highlightPos.z);
 					const objectExit = objects.find(function(object){
 						return (object.position.x === highlightMesh.position.x)
@@ -275,7 +337,9 @@
 						await delay(100);
 						var checkWin = isWin();
 						if(checkWin==-100){
-							gameStat = "Player Wins";
+							gameStat = "You won the level "+level;
+						}else if(!isMovesLeft()){
+							gameStat = "Tie (Game Over)";
 						}else{
 							// AI Turn
 							objCopy = cubeai.clone();
@@ -332,7 +396,7 @@
 							}else if(!isMovesLeft()){
 								gameStat = "Tie (Game Over)";
 							}
-							playerTurn.innerText = 'Player Turn';
+							playerTurn.innerText = 'Your Turn';
 						}
 					}
 				});
@@ -489,6 +553,8 @@
 		function restartFun(){
 			var level = document.querySelector("#TicTacToe4level");
 			localStorage.setItem("level", level.value);
+			var boardSizeSelect = document.querySelector("#boad-size");
+			localStorage.setItem("boardSize", boardSizeSelect.value);
 			location.reload();
 		}
 		window.restartFun=restartFun;
