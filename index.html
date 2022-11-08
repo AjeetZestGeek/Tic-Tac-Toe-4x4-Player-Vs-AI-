@@ -12,6 +12,11 @@
     width: 100%;
     padding: 25px;
     justify-content: space-around;
+    align-items: center;
+}
+.boad-size  {
+	 max-width: 200px;
+    width: 100%;
 }
 .levels-change{
 	width: 100%;
@@ -40,7 +45,7 @@
 	<p class="text">Loging ...</p>
 	<div class="levels">
 	<p class="turn">Loging ... </p>
-	<p class="turn">
+	<p class="boad-size">
 		<select id="TicTacToe4level"  class="levels-change" onchange="restartFun()">
 			<option value="0">Level 0</option>
 			<option value="1">Level 1</option>
@@ -53,7 +58,7 @@
 	</p>
 	<p class="text">Board Size</p>
 	<p class="boad-size">
-		<select id="boad-size"  class="board-change" onchange="restartFun()">
+		<select id="boad-size"  class="board-change levels-change" onchange="restartFun()">
 			<option value="3">3 x 3</option>
 			<option value="4">4 x 4</option>
 			<option value="5">5 x 5</option>
