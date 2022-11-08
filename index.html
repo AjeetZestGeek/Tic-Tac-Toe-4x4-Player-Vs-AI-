@@ -344,7 +344,7 @@
 							// AI Turn
 							objCopy = cubeai.clone();
 							var pos = {x:-1,z:-1};;
-							if(aino1stmove>1){
+							if(aino1stmove>1||(boardSize==3&&aino1stmove>0)||level==6){
 								pos = findBestMove();
 								board[pos.z][pos.x] = ai;
 								var tryWin = isWin();
